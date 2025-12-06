@@ -1,6 +1,13 @@
-public class Node {
+import java.io.Serializable;
+
+public class Node implements Serializable {
     private String address;
     private int port;
+
+    public Node(String address, int port) {
+        this.address = address;
+        this.port = port;
+    }
 
     public String getAddress() {
         return address;
