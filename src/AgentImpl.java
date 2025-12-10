@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.net.Socket;
 import java.util.Hashtable;
 import java.util.Queue;
@@ -60,7 +61,14 @@ public class AgentImpl implements Agent {
                 FileInputStream fis = new FileInputStream(jarFile);
                 // pour envoyer la taille du fichier
                 DataOutputStream dos = new DataOutputStream(socket.getOutputStream());) {
+            
             // Step B : Sending of the above message to the target server
+            // Envoi du nom du fichier JAR (jarPath) afin que le récepteur sache comment le nommer
+            byte[] nameBytes = jarFile.getName().getBytes(StandardCharsets.UTF_8);
+            dos.writeInt(nameBytes.length);
+            dos.write(nameBytes);
+            dos.flush();
+
             // Envoi de la taille du fichier JAR
             dos.writeLong(jarFile.length());
             dos.flush();

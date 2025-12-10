@@ -2,7 +2,10 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.UUID;
+import java.nio.charset.StandardCharsets;
 
 public class Server {
     private int port;
@@ -29,11 +32,14 @@ public class Server {
         try (DataInputStream dis = new DataInputStream(socket.getInputStream())) {
             // Step D : Reception of the message in the destination agent server
             System.out.println("Réception d'un agent");
+            // lecture du nom du JAR envoyé par le client (longueur + UTF-8)
+            int nameLen = dis.readInt();
+            byte[] nameBytes = new byte[nameLen];
+            dis.readFully(nameBytes);
+            String originalJarName = new String(nameBytes, StandardCharsets.UTF_8);
             // lecture de la taille et du contenu du JAR
             long jarSize = dis.readLong();
-            // sauvegarde du JAR avec un nom unique
-            String uniqueID = UUID.randomUUID().toString();
-            File fileJar = new File("jar_" + uniqueID + ".jar");
+            File fileJar = new File(originalJarName);
             try (FileOutputStream fos = new FileOutputStream(fileJar)) {
                 byte[] buffer = new byte[4096];
                 long count = jarSize;
@@ -70,20 +76,44 @@ public class Server {
             // Step H : Restart of the agent
             System.out.println("Lancement de l'agent");
             agent.main();
-        } catch (
-        Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public static void main(String[] args) {
-        // On récupère le port depuis les arguments
-        if (args.length != 1) {
-            System.out.println("Usage: java Server <port>");
-            return;
-        }
-        int port = Integer.parseInt(args[0]);
+        if (args.length == 1) {
+            int port = Integer.parseInt(args[0]);
+            new Server(port).start();
+        } else if (args.length == 2) {
+            int port = Integer.parseInt(args[0]);
+            String clientJarPath = args[1];
 
-        new Server(port).start();
+            // Définition de l'itinéraire
+            Queue<Node> itinerary = new LinkedList<>();
+            itinerary.add(new Node("localhost", 8081));
+            itinerary.add(new Node("localhost", 8082));
+            itinerary.add(new Node("localhost", port));
+
+            // Configuration de l'Agent
+            System.out.println("Création de l'agent");
+            TestAgent agent = new TestAgent(itinerary);
+            agent.setJarPath(clientJarPath);
+
+            // envoi initial
+            Node firstDestination = itinerary.poll();
+            System.out.println("CLIENT: Migration vers serveur" + firstDestination.getPort());
+            try {
+                agent.move(firstDestination);
+                System.out.println("CLIENT: Agent envoyé avec succès. Le programme continue d'écouter le retour.");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            new Server(port).start();
+
+        } else {
+            System.out.println("Usage: java Server <port> <agent>");
+        }
+
     }
 }
