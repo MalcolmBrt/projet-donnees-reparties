@@ -1,7 +1,6 @@
 import java.lang.reflect.Constructor;
 
 public class Starter {
-    
     private AgentClassLoader loader;
 
     public Starter(AgentClassLoader loader) {
@@ -9,16 +8,20 @@ public class Starter {
     }
 
     public Object newInstance(String className, Object... args) throws Exception {
-        // Appelera findClass -> integrateCode -> lecture du JAR
         Class<?> clazz = loader.loadClass(className);
 
-        // Recherche simple du premier constructeur disponible
-        // (Pour une vraie app, il faudrait chercher le constructeur correspondant aux types des args)
-        if (args.length > 0) {
-            Constructor<?> constructor = clazz.getConstructors()[0];
-            return constructor.newInstance(args);
-        } else {
-            return clazz.newInstance();
+        if (args == null || args.length == 0) {
+            return clazz.getDeclaredConstructor().newInstance();
         }
+
+        // Recherche d'un constructeur compatible avec les arguments
+        for (Constructor<?> c : clazz.getConstructors()) {
+            if (c.getParameterCount() == args.length) {
+                // NOTE: Pour une vraie robustesse, il faudrait vérifier les types exacts des paramètres.
+                // Ici on suppose que le nombre d'arguments suffit pour ce projet.
+                return c.newInstance(args);
+            }
+        }
+        throw new NoSuchMethodException("Aucun constructeur trouvé pour " + className + " avec ces arguments.");
     }
 }

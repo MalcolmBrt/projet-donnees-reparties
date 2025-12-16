@@ -59,12 +59,29 @@ public class Server {
             byte[] agentData = new byte[(int) dataSize];
             dis.readFully(agentData);
 
-            // Step G : De-serialisation of the agent data
-            ByteArrayInputStream bis = new ByteArrayInputStream(agentData);
-            ObjectInputStream ois = new ObjectInputStream(bis);
-            // pas de class loader custom pour l'instant
-            AgentImpl agent = (AgentImpl) ois.readObject();
+            // Création du ClassLoader pointant vers le JAR reçu
+            AgentClassLoader agentLoader = new AgentClassLoader(fileJar.getAbsolutePath());
 
+            // Step G : De-serialisation AVEC le ClassLoader custom
+            ByteArrayInputStream bis = new ByteArrayInputStream(agentData);
+
+            // Surcharge anonyme de ObjectInputStream pour utiliser agentLoader
+            ObjectInputStream ois = new ObjectInputStream(bis) {
+                @Override
+                protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+                    String name = desc.getName();
+                    try {
+                        // On tente de charger via notre AgentClassLoader
+                        return agentLoader.loadClass(name);
+                    } catch (ClassNotFoundException e) {
+                        // Fallback sur le loader par défaut si c'est une classe système (ex: String,
+                        // Hashtable)
+                        return super.resolveClass(desc);
+                    }
+                }
+            };
+
+            AgentImpl agent = (AgentImpl) ois.readObject();
             // indique à l'agent où se trouve son fichier JAR sur ce serveur
             // pour qu'il puisse le lire s'il veut faire un move() vers ailleurs
             agent.setJarPath(fileJar.getAbsolutePath());
