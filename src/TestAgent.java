@@ -1,8 +1,8 @@
 import java.util.Queue;
 
 public class TestAgent extends AgentImpl {
-    public TestAgent(Queue<Node> itinerary) {
-        super(itinerary);
+    public TestAgent(Queue<Node> itinerary, String jarPath) {
+        super(itinerary, jarPath);
     }
 
     @Override

@@ -4,7 +4,6 @@ import java.net.Socket;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.UUID;
 import java.nio.charset.StandardCharsets;
 
 public class Server {
@@ -87,7 +86,7 @@ public class Server {
             new Server(port).start();
         } else if (args.length == 2) {
             int port = Integer.parseInt(args[0]);
-            String clientJarPath = args[1];
+            String jarPath = args[1];
 
             // Définition de l'itinéraire
             Queue<Node> itinerary = new LinkedList<>();
@@ -97,8 +96,7 @@ public class Server {
 
             // Configuration de l'Agent
             System.out.println("Création de l'agent");
-            TestAgent agent = new TestAgent(itinerary);
-            agent.setJarPath(clientJarPath);
+            TestAgent agent = new TestAgent(itinerary, jarPath);
 
             // envoi initial
             Node firstDestination = itinerary.poll();

@@ -14,8 +14,9 @@ public class AgentImpl implements Agent {
     private String jarPath;
     private Hashtable<String, Object> ns;
 
-    public AgentImpl(Queue<Node> itinerary) {
+    public AgentImpl(Queue<Node> itinerary, String jarPath) {
         this.itinerary = itinerary;
+        this.jarPath = jarPath;
     }
     
     public Queue<Node> getItinerary() {
