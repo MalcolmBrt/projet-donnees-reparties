@@ -47,8 +47,6 @@ public class Server {
             // pour qu'il puisse le lire s'il veut faire un move() vers ailleurs
             agent.setJarPath(fileJar.getAbsolutePath());
 
-            // Injection service (vide)
-            agent.setNameServer(new Hashtable<>());
 
             // Step H : Restart of the agent
             System.out.println("Lancement de l'agent");

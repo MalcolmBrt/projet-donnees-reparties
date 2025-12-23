@@ -18,7 +18,7 @@ public class AgentImpl implements Agent {
         this.itinerary = itinerary;
         this.jarPath = jarPath;
     }
-    
+
     public Queue<Node> getItinerary() {
         return itinerary;
     }
@@ -62,7 +62,7 @@ public class AgentImpl implements Agent {
                 FileInputStream fis = new FileInputStream(jarFile);
                 // pour envoyer la taille du fichier
                 DataOutputStream dos = new DataOutputStream(socket.getOutputStream());) {
-            
+
             // Step B : Sending of the above message to the target server
             // Envoi du nom du fichier JAR (jarPath) afin que le récepteur sache comment le nommer
             byte[] nameBytes = jarFile.getName().getBytes(StandardCharsets.UTF_8);
@@ -88,6 +88,7 @@ public class AgentImpl implements Agent {
         } catch (Exception e) {
             throw new MoveException("Erreur lors de l'envoi du fichier : " + e.getMessage(), e);
         }
+        jarFile.delete();
     }
 
     public void main() throws MoveException {
