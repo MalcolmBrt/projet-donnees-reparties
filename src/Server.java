@@ -29,59 +29,20 @@ public class Server {
 
     private void handleConnection(Socket socket) {
         try (DataInputStream dis = new DataInputStream(socket.getInputStream())) {
-            // Step D : Reception of the message in the destination agent server
             System.out.println("Réception d'un agent");
-            // lecture du nom du JAR envoyé par le client (longueur + UTF-8)
-            int nameLen = dis.readInt();
-            byte[] nameBytes = new byte[nameLen];
-            dis.readFully(nameBytes);
-            String originalJarName = new String(nameBytes, StandardCharsets.UTF_8);
-            // lecture de la taille et du contenu du JAR
-            long jarSize = dis.readLong();
-            File fileJar = new File(originalJarName);
-            try (FileOutputStream fos = new FileOutputStream(fileJar)) {
-                byte[] buffer = new byte[4096];
-                long count = jarSize;
-                while (count > 0) {
-                    // on met dans le buffer les 4096 premiers octets reçus
-                    // ou le nombre d'octet restant si plus petit
-                    int read = dis.read(buffer, 0, (int) Math.min(buffer.length, count));
-                    // dis.read() retourne -1 quand fin de flux, on sort donc de la boucle
-                    if (read == -1)
-                        break;
-                    fos.write(buffer, 0, read);
-                    count -= read;
-                }
-            }
-            System.out.println("Code agent sauvegardé : " + fileJar.getName());
-            // lecture des données sérialisées
-            long dataSize = dis.readLong();
-            byte[] agentData = new byte[(int) dataSize];
-            dis.readFully(agentData);
 
-            // Création du ClassLoader pointant vers le JAR reçu
-            AgentClassLoader agentLoader = new AgentClassLoader(fileJar.getAbsolutePath());
+            // Step D : Reception of the message in the destination agent server
+            File fileJar = receiveJarFile(dis);
 
-            // Step G : De-serialisation AVEC le ClassLoader custom
-            ByteArrayInputStream bis = new ByteArrayInputStream(agentData);
+            // Step F : Creation of a class loader associated with the incoming agent
+            AgentLoader agentLoader = new AgentLoader(this.getClass().getClassLoader());
+            agentLoader.loadJar(fileJar.getAbsolutePath());
 
-            // Surcharge anonyme de ObjectInputStream pour utiliser agentLoader
-            ObjectInputStream ois = new ObjectInputStream(bis) {
-                @Override
-                protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
-                    String name = desc.getName();
-                    try {
-                        // On tente de charger via notre AgentClassLoader
-                        return agentLoader.loadClass(name);
-                    } catch (ClassNotFoundException e) {
-                        // Fallback sur le loader par défaut si c'est une classe système (ex: String,
-                        // Hashtable)
-                        return super.resolveClass(desc);
-                    }
-                }
-            };
+            byte[] agentData = receiveAgentData(dis);
 
-            AgentImpl agent = (AgentImpl) ois.readObject();
+            // Step G : De-serialisation of the agent data
+            AgentImpl agent = deserializeAgent(agentData, agentLoader);
+
             // indique à l'agent où se trouve son fichier JAR sur ce serveur
             // pour qu'il puisse le lire s'il veut faire un move() vers ailleurs
             agent.setJarPath(fileJar.getAbsolutePath());
@@ -97,11 +58,73 @@ public class Server {
         }
     }
 
+    private File receiveJarFile(DataInputStream dis) throws IOException {
+        // Lecture de la longueur du nom et du nom
+        int nameLen = dis.readInt();
+        byte[] nameBytes = new byte[nameLen];
+        dis.readFully(nameBytes);
+        String jarName = new String(nameBytes, StandardCharsets.UTF_8);
+
+        // Lecture de la taille du fichier
+        long jarSize = dis.readLong();
+
+        File fileJar = new File(jarName);
+        if (fileJar.exists()) {
+            fileJar.delete();
+        }
+
+        // Écriture du contenu sur le disque
+        try (FileOutputStream fos = new FileOutputStream(fileJar)) {
+            byte[] buffer = new byte[4096];
+            long remaining = jarSize;
+            while (remaining > 0) {
+                int read = dis.read(buffer, 0, (int) Math.min(buffer.length, remaining));
+                if (read == -1)
+                    break;
+                fos.write(buffer, 0, read);
+                remaining -= read;
+            }
+        }
+        System.out.println("SERVEUR: Code agent sauvegardé -> " + fileJar.getName());
+        return fileJar;
+    }
+
+    private byte[] receiveAgentData(DataInputStream dis) throws IOException {
+        long dataSize = dis.readLong();
+        byte[] agentData = new byte[(int) dataSize];
+        dis.readFully(agentData);
+        System.out.println("SERVEUR: Données de l'agent reçues (" + dataSize + " bytes).");
+        return agentData;
+    }
+
+    private AgentImpl deserializeAgent(byte[] agentData, AgentLoader loader)
+            throws IOException, ClassNotFoundException {
+        ByteArrayInputStream bis = new ByteArrayInputStream(agentData);
+
+        // Surcharge de resolveClass pour utiliser notre loader
+        try (ObjectInputStream ois = new ObjectInputStream(bis) {
+            @Override
+            protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
+                // Utilisation de Class.forName pour gérer les tableaux et types complexes
+                // comme recommandé précédemment
+                try {
+                    return Class.forName(desc.getName(), false, loader);
+                } catch (ClassNotFoundException e) {
+                    return super.resolveClass(desc);
+                }
+            }
+        }) {
+            return (AgentImpl) ois.readObject();
+        }
+    }
+
     public static void main(String[] args) {
         if (args.length == 1) {
+            // cas serveur receveur
             int port = Integer.parseInt(args[0]);
             new Server(port).start();
         } else if (args.length == 2) {
+            // cas serveur emetteur initial
             int port = Integer.parseInt(args[0]);
             String jarPath = args[1];
 
