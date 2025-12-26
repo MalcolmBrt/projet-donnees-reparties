@@ -1,17 +1,30 @@
 #!/bin/bash
 
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <AgentName>"
+    echo "Exemple: $0 TestAgent"
+    exit 1
+fi
+
+AGENT_NAME=$1
+JAR_NAME="${AGENT_NAME}.jar"
+
 # 1. NETTOYAGE
 # On supprime les anciens fichiers pour éviter les conflits
 echo "--- Nettoyage ---"
-rm -rf bin dist runtime
-mkdir -p bin dist
+rm -rf bin runtime
+mkdir -p bin
 mkdir -p runtime/client runtime/srv1 runtime/srv2
 
 # 2. COMPILATION
 # On compile tout d'un coup. 
 # -d bin : demande à Java de générer l'arborescence des packages dans le dossier bin
 echo "--- Compilation ---"
-javac -d bin src/common/*.java src/platform/*.java src/agents/*.java
+javac -d bin \
+    src/common/*.java \
+    src/platform/*.java \
+    src/agents/*.java \
+    src/services/restaurants/*.java
 
 # Vérification si la compilation a marché
 if [ $? -ne 0 ]; then
@@ -22,8 +35,7 @@ fi
 # 3. CRÉATION DU JAR DE L'AGENT
 echo "--- Création du JAR ---"
 cd bin
-# On inclut le dossier 'agents/' dans le jar car TestAgent fait partie du package agents
-jar cvf ../runtime/client/TestAgent.jar TestAgent.class
+jar cf ../runtime/client/${JAR_NAME} ${AGENT_NAME}.class
 cd ..
 
 # 4. DÉPLOIEMENT (COPIE)
@@ -35,9 +47,9 @@ echo "--- Déploiement vers runtime/srv1 et runtime/srv2 ---"
 cd bin
 cp *.class ../runtime/client/
 cp *.class ../runtime/srv1/
-rm ../runtime/srv1/TestAgent.class
+rm ../runtime/srv1/${AGENT_NAME}.class
 cp *.class ../runtime/srv2/
-rm ../runtime/srv2/TestAgent.class
+rm ../runtime/srv2/${AGENT_NAME}.class
 
 
 echo "TERMINÉ !"

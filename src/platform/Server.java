@@ -3,14 +3,26 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Hashtable;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.nio.charset.StandardCharsets;
 
 public class Server {
     private int port;
+    private Hashtable<String, Object> services = new Hashtable<>();
 
     public Server(int port) {
         this.port = port;
+    }
+
+    public Server(int port, String serviceKey, Object service) {
+        this.port = port;
+        this.services.put(serviceKey, service);
+    }
+
+    public void addService(String key, Object service) {
+        this.services.put(key, service);
+        System.out.println("Service enregistré : " + key);
     }
 
     public void start() {
@@ -47,6 +59,7 @@ public class Server {
             // pour qu'il puisse le lire s'il veut faire un move() vers ailleurs
             agent.setJarPath(fileJar.getAbsolutePath());
 
+            agent.setNameServer(services);
 
             // Step H : Restart of the agent
             System.out.println("Lancement de l'agent");
@@ -117,12 +130,9 @@ public class Server {
     }
 
     public static void main(String[] args) {
-        if (args.length == 1) {
-            // cas serveur receveur
-            int port = Integer.parseInt(args[0]);
-            new Server(port).start();
-        } else if (args.length == 2) {
-            // cas serveur emetteur initial
+        // cas serveur initial (client)
+        List<String> agentsAccepted = List.of("TestAgent.jar", "GourmetAgent.jar");
+        if (args.length == 2 && agentsAccepted.contains(args[1])) {
             int port = Integer.parseInt(args[0]);
             String jarPath = args[1];
 
@@ -134,7 +144,12 @@ public class Server {
 
             // Configuration de l'Agent
             System.out.println("Création de l'agent");
-            TestAgent agent = new TestAgent(itinerary, jarPath);
+            AgentImpl agent;
+            if (jarPath.equals("TestAgent.jar")) {
+                agent = new TestAgent(itinerary, jarPath);
+            } else {
+                agent = new GourmetAgent(itinerary, jarPath);
+            }
 
             // envoi initial
             Node firstDestination = itinerary.poll();
@@ -147,9 +162,24 @@ public class Server {
             }
             new Server(port).start();
 
-        } else {
-            System.out.println("Usage: java Server <port> <agent>");
-        }
+            // cas serveur receveur
+        } else if (args.length == 2) {
+            int port = Integer.parseInt(args[0]);
+            String serviceType = args[1];
+            switch (serviceType) {
+                case "ServiceGuide":
+                    new Server(port, "ServiceGuide", new ServiceGuideImpl()).start();
+                    break;
+                case "ServiceTarif":
+                    new Server(port, "ServiceTarif", new ServiceTarifImpl()).start();
+                    break;
+                default:
+                    System.out.println("Type de service inconnu, démarrage serveur vide.");
+                    new Server(port).start();
+            }
 
+        } else {
+            System.out.println("Usage: java Server <port> <agent.jar|ServiceGuide|ServiceTarif>");
+        }
     }
 }
