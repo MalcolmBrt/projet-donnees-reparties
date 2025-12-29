@@ -127,7 +127,7 @@ public class Server {
 
     public static void main(String[] args) {
         // cas serveur initial (client)
-        List<String> agentsAccepted = List.of("TestAgent.jar", "GourmetAgent.jar");
+        List<String> agentsAccepted = List.of("TestAgent.jar", "GourmetAgent.jar", "CompressAgent.jar");
         if (args.length == 2 && agentsAccepted.contains(args[1])) {
             int port = Integer.parseInt(args[0]);
             String jarPath = args[1];
@@ -135,7 +135,9 @@ public class Server {
             // Définition de l'itinéraire
             Queue<Node> itinerary = new LinkedList<>();
             itinerary.add(new Node("localhost", 8081));
-            itinerary.add(new Node("localhost", 8082));
+            if (!jarPath.equals("CompressAgent.jar")) {
+                itinerary.add(new Node("localhost", 8082));
+            }
             itinerary.add(new Node("localhost", port));
 
             // Configuration de l'Agent
@@ -158,7 +160,7 @@ public class Server {
 
             // envoi initial
             Node firstDestination = itinerary.poll();
-            System.out.println("CLIENT : Migration vers serveur" + firstDestination.getPort());
+            System.out.println("CLIENT : Migration vers serveur " + firstDestination.getPort());
             try {
                 agent.move(firstDestination);
             } catch (Exception e) {
@@ -176,6 +178,9 @@ public class Server {
                     break;
                 case "ServiceTarif":
                     new Server(port, "ServiceTarif", new ServiceTarifImpl()).start();
+                    break;
+                case "ServiceFile":
+                    new Server(port, "ServiceFile", new ServiceFileImpl()).start();
                     break;
                 default:
                     System.out.println("Type de service inconnu, démarrage serveur vide.");
