@@ -41,7 +41,7 @@ cd ..
 # 4. DÉPLOIEMENT (COPIE)
 # On copie TOUTE la structure de packages (common, platform) vers les serveurs
 # C'est important de garder les dossiers, sinon Java ne trouve pas les classes.
-echo "--- Déploiement vers runtime/srv1 et runtime/srv2 ---"
+echo "--- Déploiement ---"
 
 # Copie des classes (.class)
 cd bin
@@ -62,4 +62,4 @@ echo "cd runtime/srv2"
 echo "java Server 8082"
 echo "Serveur initial :"
 echo "cd runtime/client"
-echo "java Server 8080 TestAgent.jar"
+echo "java Server 8080 ${JAR_NAME}"

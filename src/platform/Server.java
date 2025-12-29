@@ -1,4 +1,5 @@
 import java.io.*;
+import java.lang.reflect.Constructor;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Hashtable;
@@ -20,14 +21,9 @@ public class Server {
         this.services.put(serviceKey, service);
     }
 
-    public void addService(String key, Object service) {
-        this.services.put(key, service);
-        System.out.println("Service enregistré : " + key);
-    }
-
     public void start() {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("Serveur démarré sur le port " + port);
+            System.out.println("SERVEUR : Serveur démarré sur le port " + port);
 
             while (true) {
                 Socket client = serverSocket.accept();
@@ -41,7 +37,7 @@ public class Server {
 
     private void handleConnection(Socket socket) {
         try (DataInputStream dis = new DataInputStream(socket.getInputStream())) {
-            System.out.println("Réception d'un agent");
+            System.out.println("SERVEUR : Réception d'un agent");
 
             // Step D : Reception of the message in the destination agent server
             File fileJar = receiveJarFile(dis);
@@ -62,7 +58,7 @@ public class Server {
             agent.setNameServer(services);
 
             // Step H : Restart of the agent
-            System.out.println("Lancement de l'agent");
+            System.out.println("SERVEUR : Lancement de l'agent");
             agent.main();
         } catch (Exception e) {
             e.printStackTrace();
@@ -96,7 +92,7 @@ public class Server {
                 remaining -= read;
             }
         }
-        System.out.println("SERVEUR: Code agent sauvegardé -> " + fileJar.getName());
+        System.out.println("SERVEUR : Code agent sauvegardé -> " + fileJar.getName());
         return fileJar;
     }
 
@@ -104,7 +100,7 @@ public class Server {
         long dataSize = dis.readLong();
         byte[] agentData = new byte[(int) dataSize];
         dis.readFully(agentData);
-        System.out.println("SERVEUR: Données de l'agent reçues (" + dataSize + " bytes).");
+        System.out.println("SERVEUR : Données de l'agent reçues (" + dataSize + " bytes).");
         return agentData;
     }
 
@@ -143,20 +139,28 @@ public class Server {
             itinerary.add(new Node("localhost", port));
 
             // Configuration de l'Agent
-            System.out.println("Création de l'agent");
+            System.out.println("CLIENT : Création de l'agent");
             AgentImpl agent;
-            if (jarPath.equals("TestAgent.jar")) {
-                agent = new TestAgent(itinerary, jarPath);
-            } else {
-                agent = new GourmetAgent(itinerary, jarPath);
+            try {
+                String className = jarPath.replace(".jar", "");
+                // Création du classloader agent
+                AgentLoader agentLoader = new AgentLoader(Server.class.getClassLoader());
+                agentLoader.loadJar(jarPath);
+                // Chargement de la classe via le loader
+                Class<?> clazz = Class.forName(className, true, agentLoader);
+                Constructor<?> ctor = clazz.getConstructor(Queue.class, String.class);
+                agent = (AgentImpl) ctor.newInstance(itinerary, jarPath);
+            } catch (Exception e) {
+                System.err.println("CLIENT : Impossible de charger l'agent " + jarPath);
+                e.printStackTrace();
+                return;
             }
 
             // envoi initial
             Node firstDestination = itinerary.poll();
-            System.out.println("CLIENT: Migration vers serveur" + firstDestination.getPort());
+            System.out.println("CLIENT : Migration vers serveur" + firstDestination.getPort());
             try {
                 agent.move(firstDestination);
-                System.out.println("CLIENT: Agent envoyé avec succès. Le programme continue d'écouter le retour.");
             } catch (Exception e) {
                 e.printStackTrace();
             }

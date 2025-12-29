@@ -14,7 +14,7 @@ public class GourmetAgent extends AgentImpl {
 
         // --- CAS 1 : On est sur le serveur "Guide" ---
         if (services.containsKey("ServiceGuide")) {
-            System.out.println("AGENT: Arrivé au Guide Michelin.");
+            System.out.println("AGENT : Arrivé au Guide Michelin.");
             ServiceGuide guide = (ServiceGuide) services.get("ServiceGuide");
 
             // 1. Récupération locale (rapide)
@@ -27,12 +27,12 @@ public class GourmetAgent extends AgentImpl {
             int top = Math.min(3, resultats.size());
             this.maSelection = new ArrayList<>(resultats.subList(0, top));
             
-            System.out.println("AGENT: J'ai sélectionné les " + top + " meilleures tables.");
+            System.out.println("AGENT : J'ai sélectionné les " + top + " meilleures tables.");
         }
 
         // --- CAS 2 : On est sur le serveur "Tarifs" ---
         else if (services.containsKey("ServiceTarif")) {
-            System.out.println("AGENT: Arrivé au Service Compta. Récupération des prix...");
+            System.out.println("AGENT : Arrivé au Service Compta. Récupération des prix...");
             ServiceTarif tarifService = (ServiceTarif) services.get("ServiceTarif");
 
             // Pour chaque restaurant sélectionné, on cherche son prix localement
@@ -40,12 +40,12 @@ public class GourmetAgent extends AgentImpl {
                 double prix = tarifService.getPrix(r.getNom());
                 r.setPrixMoyen(prix);
             }
-            System.out.println("AGENT: Prix mis à jour pour la sélection.");
+            System.out.println("AGENT : Prix mis à jour pour la sélection.");
         }
 
         // --- CAS 3 : Retour à la maison (ou serveur sans service connu) ---
         else {
-            System.out.println("--- RESULTAT FINAL DE LA MISSION ---");
+            System.out.println("AGENT : ");
             if (maSelection.isEmpty()) {
                 System.out.println("Aucun restaurant trouvé ou parcours incomplet.");
             } else {

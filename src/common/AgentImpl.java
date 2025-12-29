@@ -12,7 +12,8 @@ import java.util.Queue;
 public class AgentImpl implements Agent {
     private Queue<Node> itinerary;
     private String jarPath;
-    private Hashtable<String, Object> ns;
+    // transient empêche l'agent d'essayer de sérialiser les services
+    private transient Hashtable<String, Object> ns;
 
     public AgentImpl(Queue<Node> itinerary, String jarPath) {
         this.itinerary = itinerary;
@@ -84,7 +85,7 @@ public class AgentImpl implements Agent {
             dos.writeLong(agentData.length);
             dos.write(agentData);
             dos.flush();
-            System.out.println("Fichier et état envoyés !");
+            System.out.println("AGENT : Fichier et état envoyés !");
         } catch (Exception e) {
             throw new MoveException("Erreur lors de l'envoi du fichier : " + e.getMessage(), e);
         }
