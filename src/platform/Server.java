@@ -55,7 +55,7 @@ public class Server {
             // pour qu'il puisse le lire s'il veut faire un move() vers ailleurs
             agent.setJarPath(fileJar.getAbsolutePath());
 
-            agent.setNameServer(services);
+            agent.setServices(services);
 
             // Step H : Restart of the agent
             System.out.println("SERVEUR : Lancement de l'agent");
@@ -113,7 +113,6 @@ public class Server {
             @Override
             protected Class<?> resolveClass(ObjectStreamClass desc) throws IOException, ClassNotFoundException {
                 // Utilisation de Class.forName pour gérer les tableaux et types complexes
-                // comme recommandé précédemment
                 try {
                     return Class.forName(desc.getName(), false, loader);
                 } catch (ClassNotFoundException e) {

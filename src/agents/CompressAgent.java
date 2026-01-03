@@ -15,7 +15,7 @@ public class CompressAgent extends AgentImpl {
 
     @Override
     public void main() throws MoveException {
-        Hashtable<String, Object> services = getNameServer();
+        Hashtable<String, Object> services = getServices();
 
         if (services.containsKey("ServiceFile")) {
             System.out.println("AGENT : Arrivé au Service Fichier. Je demande : " + fileName);

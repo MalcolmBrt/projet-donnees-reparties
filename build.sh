@@ -33,10 +33,12 @@ fi
 echo "--- Configuration pour $AGENT_NAME ---"
 
 CORE_FILES="Server.class Server\$1.class AgentLoader.class Agent.class AgentImpl.class MoveException.class Node.class"
+CLIENT_FILES="$CORE_FILES"
 
 case $AGENT_NAME in
     "GourmetAgent")
         JAR_CONTENT="$AGENT_NAME.class"
+        CLIENT_FILES="$CLIENT_FILES Restaurant.class"
         SERVER_FILES="ServiceGuideImpl.class ServiceTarifImpl.class Restaurant.class ServiceGuide.class ServiceTarif.class"
         ;;
     "CompressAgent")
@@ -62,7 +64,7 @@ echo "--- Déploiement ---"
 
 # Déploiement sur le CLIENT (Uniquement le Core)
 echo "-> Client..."
-for file in $CORE_FILES; do
+for file in $CLIENT_FILES; do
     cp "bin/$file" "runtime/client/"
 done
 

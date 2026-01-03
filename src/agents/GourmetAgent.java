@@ -10,7 +10,7 @@ public class GourmetAgent extends AgentImpl {
     @Override
     public void main() throws MoveException {
         // On récupère l'annuaire de services local
-        Hashtable<String, Object> services = getNameServer();
+        Hashtable<String, Object> services = getServices();
 
         // --- CAS 1 : On est sur le serveur "Guide" ---
         if (services.containsKey("ServiceGuide")) {

@@ -13,7 +13,7 @@ public class AgentImpl implements Agent {
     private Queue<Node> itinerary;
     private String jarPath;
     // transient empêche l'agent d'essayer de sérialiser les services
-    private transient Hashtable<String, Object> ns;
+    private transient Hashtable<String, Object> services;
 
     public AgentImpl(Queue<Node> itinerary, String jarPath) {
         this.itinerary = itinerary;
@@ -36,12 +36,12 @@ public class AgentImpl implements Agent {
         this.jarPath = jarPath;
     }
 
-    public Hashtable<String, Object> getNameServer() {
-        return ns;
+    public Hashtable<String, Object> getServices() {
+        return services;
     }
 
-    public void setNameServer(Hashtable<String, Object> ns) {
-        this.ns = ns;
+    public void setServices(Hashtable<String, Object> services) {
+        this.services = services;
     }
 
     public void move(Node target) throws MoveException {
