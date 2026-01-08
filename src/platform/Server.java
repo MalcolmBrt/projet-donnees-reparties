@@ -4,7 +4,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Hashtable;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.nio.charset.StandardCharsets;
 
@@ -126,90 +125,34 @@ public class Server {
 
     public static void main(String[] args) {
         if (args.length < 2) {
-            System.out.println("--- USAGE ---");
-            System.out.println("Format adresse : IP:PORT (ex: 127.0.0.1:8080)");
-            System.out.println("1. SERVEUR : java Server <LocalAddress> <ServiceType>");
-            System.out.println("2. CLIENT  : java Server <LocalAddress> <DestAddress1> ... <Agent.jar>");
+            System.out.println("USAGE SERVEUR : java Server <IP:PORT> <ServiceType>");
             return;
         }
 
-        // récupération addresse locale
         String localAddressArg = args[0];
         if (!localAddressArg.contains(":")) {
-            System.err.println("Erreur : L'adresse locale doit être au format IP:PORT (ex: 127.0.0.1:8080)");
+            System.err.println("Erreur : Format IP:PORT attendu.");
             return;
         }
-        String myIp = localAddressArg.split(":")[0];
+
+        // On récupère juste le port pour le ServerSocket (l'IP sert juste d'info ici)
         int myPort = Integer.parseInt(localAddressArg.split(":")[1]);
-        String lastArg = args[args.length - 1];
+        String serviceType = args[1];
 
-        // MODE CLIENT
-        if (lastArg.endsWith(".jar")) {
-            try {
-                String jarPath = lastArg;
-
-                Queue<Node> itinerary = new LinkedList<>();
-                for (int i = 1; i < args.length - 1; i++) {
-                    String dest = args[i];
-                    String[] parts = dest.split(":");
-                    if (parts.length != 2) {
-                        System.err.println("Erreur format destination (attendu IP:PORT) : " + dest);
-                        return;
-                    }
-                    itinerary.add(new Node(parts[0], Integer.parseInt(parts[1])));
-                }
-
-                System.out.println("CLIENT : Mon adresse de retour est " + myIp + ":" + myPort);
-                itinerary.add(new Node(myIp, myPort));
-
-                // Configuration de l'Agent
-                System.out.println("CLIENT : Création de l'agent");
-                AgentImpl agent;
-                try {
-                    String className = jarPath.replace(".jar", "");
-                    // Création du classloader agent
-                    AgentLoader agentLoader = new AgentLoader(Server.class.getClassLoader());
-                    agentLoader.loadJar(jarPath);
-                    // Chargement de la classe via le loader
-                    Class<?> clazz = Class.forName(className, true, agentLoader);
-                    Constructor<?> ctor = clazz.getConstructor(Queue.class, String.class);
-                    agent = (AgentImpl) ctor.newInstance(itinerary, jarPath);
-                } catch (Exception e) {
-                    System.err.println("CLIENT : Impossible de charger l'agent " + jarPath);
-                    e.printStackTrace();
-                    return;
-                }
-
-                Node firstDestination = itinerary.poll();
-                if (firstDestination != null) {
-                    System.out.println(
-                            "CLIENT : Départ vers " + firstDestination.getAddress() + ":" + firstDestination.getPort());
-                    agent.move(firstDestination);
-                }
-
+        // Démarrage du service spécifique
+        switch (serviceType) {
+            case "ServiceGuide":
+                new Server(myPort, "ServiceGuide", new ServiceGuideImpl()).start();
+                break;
+            case "ServiceTarif":
+                new Server(myPort, "ServiceTarif", new ServiceTarifImpl()).start();
+                break;
+            case "ServiceFile":
+                new Server(myPort, "ServiceFile", new ServiceFileImpl()).start();
+                break;
+            default:
+                System.out.println("Service inconnu ou vide. Démarrage serveur générique.");
                 new Server(myPort).start();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        // MODE SERVEUR DE SERVICE
-        else {
-            String serviceType = args[1];
-            switch (serviceType) {
-                case "ServiceGuide":
-                    new Server(myPort, "ServiceGuide", new ServiceGuideImpl()).start();
-                    break;
-                case "ServiceTarif":
-                    new Server(myPort, "ServiceTarif", new ServiceTarifImpl()).start();
-                    break;
-                case "ServiceFile":
-                    new Server(myPort, "ServiceFile", new ServiceFileImpl()).start();
-                    break;
-                default:
-                    System.out.println("Service inconnu. Démarrage serveur générique sur " + myIp + ":" + myPort);
-                    new Server(myPort).start();
-            }
         }
     }
 }

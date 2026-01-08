@@ -33,7 +33,7 @@ fi
 echo "--- Configuration pour $AGENT_NAME ---"
 
 CORE_FILES="Server.class Server\$1.class AgentLoader.class Agent.class AgentImpl.class MoveException.class Node.class"
-CLIENT_FILES="$CORE_FILES"
+CLIENT_FILES="$CORE_FILES Client.class"
 
 case $AGENT_NAME in
     "GourmetAgent")
@@ -90,8 +90,8 @@ echo "=========================================="
 if [ "$AGENT_NAME" == "GourmetAgent" ]; then
     echo "1. Srv 1 (Guide) : cd runtime/srv1 && java Server IP:PORT ServiceGuide"
     echo "2. Srv 2 (Tarif) : cd runtime/srv2 && java Server IP:PORT ServiceTarif"
-    echo "3. Client        : cd runtime/client && java Server IP:PORT $JAR_NAME"
+    echo "3. Client        : cd runtime/client && java Client IP:PORT IP:PORT IP:PORT $JAR_NAME"
 elif [ "$AGENT_NAME" == "CompressAgent" ]; then
     echo "1. Srv 1 (File)  : cd runtime/srv1 && java Server IP:PORT ServiceFile"
-    echo "3. Client        : cd runtime/client && java Server IP:PORT $JAR_NAME"
+    echo "3. Client        : cd runtime/client && java Client IP:PORT IP:PORT $JAR_NAME"
 fi
