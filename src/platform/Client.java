@@ -1,6 +1,11 @@
+package platform;
+
 import java.lang.reflect.Constructor;
 import java.util.LinkedList;
 import java.util.Queue;
+
+import common.AgentImpl;
+import common.Node;
 
 public class Client {
 
@@ -51,7 +56,7 @@ public class Client {
             System.out.println("CLIENT : Création de l'agent depuis " + jarPath);
             AgentImpl agent;
             
-            String className = jarPath.replace(".jar", ""); // Convention: Nom du jar = Nom de la classe
+            String className = "agents." + jarPath.replace(".jar", "");
             
             // Création du classloader pour charger le jar localement une première fois
             AgentLoader agentLoader = new AgentLoader(Client.class.getClassLoader());

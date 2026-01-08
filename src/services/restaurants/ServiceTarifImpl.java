@@ -1,3 +1,5 @@
+package services.restaurants;
+
 public class ServiceTarifImpl implements ServiceTarif {
     @Override
     public double getPrix(String nom) {

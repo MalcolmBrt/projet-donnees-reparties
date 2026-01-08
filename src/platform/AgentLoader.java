@@ -1,3 +1,5 @@
+package platform;
+
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.*;

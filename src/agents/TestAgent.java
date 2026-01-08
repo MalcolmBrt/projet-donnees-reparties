@@ -1,4 +1,10 @@
+package agents;
+
 import java.util.Queue;
+
+import common.AgentImpl;
+import common.MoveException;
+import common.Node;
 
 public class TestAgent extends AgentImpl {
     public TestAgent(Queue<Node> itinerary, String jarPath) {

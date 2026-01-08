@@ -1,3 +1,5 @@
+package platform;
+
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.net.ServerSocket;
@@ -5,6 +7,12 @@ import java.net.Socket;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Queue;
+
+import common.AgentImpl;
+import services.files.ServiceFileImpl;
+import services.restaurants.ServiceGuideImpl;
+import services.restaurants.ServiceTarifImpl;
+
 import java.nio.charset.StandardCharsets;
 
 public class Server {

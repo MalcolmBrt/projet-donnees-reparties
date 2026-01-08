@@ -1,4 +1,13 @@
+package agents;
+
 import java.util.*;
+
+import common.AgentImpl;
+import common.MoveException;
+import common.Node;
+import services.restaurants.Restaurant;
+import services.restaurants.ServiceGuide;
+import services.restaurants.ServiceTarif;
 
 public class GourmetAgent extends AgentImpl {
     private List<Restaurant> maSelection = new ArrayList<>();

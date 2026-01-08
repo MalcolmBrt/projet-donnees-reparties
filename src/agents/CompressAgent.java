@@ -1,6 +1,13 @@
+package agents;
+
 import java.io.*;
 import java.util.*;
 import java.util.zip.GZIPOutputStream;
+
+import common.AgentImpl;
+import common.MoveException;
+import common.Node;
+import services.files.ServiceFile;
 
 public class CompressAgent extends AgentImpl {
     private String fileName; // Le nom du fichier à chercher

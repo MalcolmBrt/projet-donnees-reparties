@@ -32,21 +32,21 @@ fi
 
 echo "--- Configuration pour $AGENT_NAME ---"
 
-CORE_FILES="Server.class Server\$1.class AgentLoader.class Agent.class AgentImpl.class MoveException.class Node.class"
-CLIENT_FILES="$CORE_FILES Client.class"
+CORE_FILES="platform/Server.class platform/Server\$1.class platform/AgentLoader.class common/Agent.class common/AgentImpl.class common/MoveException.class common/Node.class"
+CLIENT_FILES="$CORE_FILES platform/Client.class"
 
 case $AGENT_NAME in
     "GourmetAgent")
-        JAR_CONTENT="$AGENT_NAME.class"
-        CLIENT_FILES="$CLIENT_FILES Restaurant.class"
-        SERVER_FILES="ServiceGuideImpl.class ServiceTarifImpl.class Restaurant.class ServiceGuide.class ServiceTarif.class"
+        JAR_CONTENT="agents/$AGENT_NAME.class"
+        CLIENT_FILES="$CLIENT_FILES services/restaurants/Restaurant.class"
+        SERVER_FILES="services/restaurants/ServiceGuideImpl.class services/restaurants/ServiceTarifImpl.class services/restaurants/Restaurant.class services/restaurants/ServiceGuide.class services/restaurants/ServiceTarif.class"
         ;;
     "CompressAgent")
-        JAR_CONTENT="$AGENT_NAME.class"
-        SERVER_FILES="ServiceFileImpl.class ServiceFile.class"
+        JAR_CONTENT="agents/$AGENT_NAME.class"
+        SERVER_FILES="services/files/ServiceFileImpl.class services/files/ServiceFile.class"
         ;;
     "TestAgent")
-        JAR_CONTENT="$AGENT_NAME.class"
+        JAR_CONTENT="agents/$AGENT_NAME.class"
         SERVER_FILES=""
         ;;
     *)
@@ -65,7 +65,8 @@ echo "--- Déploiement ---"
 # Déploiement sur le CLIENT (Uniquement le Core)
 echo "-> Client..."
 for file in $CLIENT_FILES; do
-    cp "bin/$file" "runtime/client/"
+    mkdir -p "runtime/client/$(dirname $file)"
+    cp "bin/$file" "runtime/client/$file"
 done
 
 # Déploiement sur les SERVEURS (Core + Services + Implémentations)
@@ -74,8 +75,10 @@ echo "-> Serveurs (srv1 & srv2)..."
 ALL_SERVER_FILES="$CORE_FILES $SERVER_FILES"
 
 for file in $ALL_SERVER_FILES; do
-    cp "bin/$file" "runtime/srv1/"
-    cp "bin/$file" "runtime/srv2/"
+    mkdir -p "runtime/srv1/$(dirname $file)"
+    cp "bin/$file" "runtime/srv1/$file"
+    mkdir -p "runtime/srv2/$(dirname $file)"
+    cp "bin/$file" "runtime/srv2/$file"
 done
 
 if [ "$AGENT_NAME" == "CompressAgent" ]; then
@@ -88,10 +91,10 @@ echo "Lancement pour le scénario : $AGENT_NAME"
 echo "=========================================="
 
 if [ "$AGENT_NAME" == "GourmetAgent" ]; then
-    echo "1. Srv 1 (Guide) : cd runtime/srv1 && java Server IP:PORT ServiceGuide"
-    echo "2. Srv 2 (Tarif) : cd runtime/srv2 && java Server IP:PORT ServiceTarif"
-    echo "3. Client        : cd runtime/client && java Client IP:PORT IP:PORT IP:PORT $JAR_NAME"
+    echo "1. Srv 1 : cd runtime/srv1 && java platform.Server IP:PORT ServiceGuide"
+    echo "2. Srv 2 : cd runtime/srv2 && java platform.Server IP:PORT ServiceTarif"
+    echo "3. Client: cd runtime/client && java platform.Client IP:PORT IP:PORT IP:PORT $JAR_NAME"
 elif [ "$AGENT_NAME" == "CompressAgent" ]; then
-    echo "1. Srv 1 (File)  : cd runtime/srv1 && java Server IP:PORT ServiceFile"
-    echo "3. Client        : cd runtime/client && java Client IP:PORT IP:PORT $JAR_NAME"
+    echo "1. Srv 1 : cd runtime/srv1 && java platform.Server IP:PORT ServiceFile"
+    echo "3. Client: cd runtime/client && java platform.Client IP:PORT IP:PORT $JAR_NAME"
 fi
