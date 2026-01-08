@@ -32,9 +32,6 @@ public class Restaurant implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("%-20s | Note: %4.1f/20 | Prix: %s",
-                nom,
-                note,
-                (prixMoyen > 0 ? prixMoyen + "€" : "N/A"));
+        return String.format("%-15s | Note: %4.1f/20 | Prix: %4.1f €", nom, note, prixMoyen);
     }
 }

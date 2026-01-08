@@ -27,16 +27,15 @@ public class GourmetAgent extends AgentImpl {
             ServiceGuide guide = (ServiceGuide) services.get("ServiceGuide");
 
             // 1. Récupération locale (rapide)
-            List<Restaurant> resultats = guide.getRestaurants();
+            List<Restaurant> resultats = guide.getRestaurants(20000);
             
             // 2. Tri local (On garde les meilleures notes en premier)
             resultats.sort((r1, r2) -> Double.compare(r2.getNote(), r1.getNote()));
 
             // 3. Filtrage (On ne garde que le TOP 3 pour voyager léger)
-            int top = Math.min(3, resultats.size());
-            this.maSelection = new ArrayList<>(resultats.subList(0, top));
+            this.maSelection = new ArrayList<>(resultats);
             
-            System.out.println("AGENT : J'ai sélectionné les " + top + " meilleures tables.");
+            System.out.println("AGENT : J'ai récupéré la liste complète de " + this.maSelection.size() + " restaurants.");
         }
 
         // --- CAS 2 : On est sur le serveur "Tarifs" ---
@@ -58,7 +57,10 @@ public class GourmetAgent extends AgentImpl {
             if (maSelection.isEmpty()) {
                 System.out.println("Aucun restaurant trouvé ou parcours incomplet.");
             } else {
-                for (Restaurant r : maSelection) {
+                int nTop = 10;
+                List<Restaurant> top = maSelection.subList(0, nTop);
+                System.out.println("Top " + nTop + " sur " + maSelection.size() + " restaurants.");
+                for (Restaurant r : top) {
                     System.out.println(r);
                 }
             }

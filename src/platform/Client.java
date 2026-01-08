@@ -34,8 +34,6 @@ public class Client {
 
         try {
             String jarPath = lastArg;
-
-            // 1. Construction de l'itinéraire
             Queue<Node> itinerary = new LinkedList<>();
             // On commence à i=1 (destinations) et on s'arrête avant le dernier arg (le jar)
             for (int i = 1; i < args.length - 1; i++) {
@@ -52,7 +50,7 @@ public class Client {
             System.out.println("CLIENT : Mon adresse de retour est " + myIp + ":" + myPort);
             itinerary.add(new Node(myIp, myPort));
 
-            // 2. Chargement initial de l'Agent via Reflection
+            // Chargement initial de l'Agent via Reflection
             System.out.println("CLIENT : Création de l'agent depuis " + jarPath);
             AgentImpl agent;
             
@@ -68,16 +66,16 @@ public class Client {
             // Instanciation
             agent = (AgentImpl) ctor.newInstance(itinerary, jarPath);
 
-            // 3. Départ de l'agent
+            // Départ de l'agent
             Node firstDestination = itinerary.poll();
-            if (firstDestination != null) {
-                System.out.println("CLIENT : Envoi de l'agent vers " + firstDestination.getAddress() + ":" + firstDestination.getPort());
-                agent.move(firstDestination);
-            }
+            System.out.println("CLIENT : Envoi de l'agent vers " + firstDestination.getAddress() + ":" + firstDestination.getPort());
+            long start = System.currentTimeMillis();
+            agent.move(firstDestination);
 
-            // 4. Le Client devient Serveur pour attendre le retour de l'agent
+            // Le Client devient Serveur pour attendre le retour de l'agent
             System.out.println("CLIENT : Je passe en mode écoute pour le retour...");
-            new Server(myPort).start();
+
+            new Server(myPort, start).start();
 
         } catch (Exception e) {
             System.err.println("CLIENT : Erreur critique");

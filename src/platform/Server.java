@@ -17,10 +17,12 @@ import java.nio.charset.StandardCharsets;
 
 public class Server {
     private int port;
+    private long startTime = 0;
     private Hashtable<String, Object> services = new Hashtable<>();
 
-    public Server(int port) {
+    public Server(int port, long startTime) {
         this.port = port;
+        this.startTime = startTime;
     }
 
     public Server(int port, String serviceKey, Object service) {
@@ -67,6 +69,12 @@ public class Server {
             // Step H : Restart of the agent
             System.out.println("SERVEUR : Lancement de l'agent");
             agent.main();
+
+            if (startTime > 0) {
+                long duration = System.currentTimeMillis() - this.startTime;
+                System.out.println("Temps ecoule : " + duration + " ms");
+                System.exit(0);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -158,9 +166,6 @@ public class Server {
             case "ServiceFile":
                 new Server(myPort, "ServiceFile", new ServiceFileImpl()).start();
                 break;
-            default:
-                System.out.println("Service inconnu ou vide. Démarrage serveur générique.");
-                new Server(myPort).start();
         }
     }
 }
