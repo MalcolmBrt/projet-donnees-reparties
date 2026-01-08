@@ -125,69 +125,91 @@ public class Server {
     }
 
     public static void main(String[] args) {
-        // cas serveur initial (client)
-        List<String> agentsAccepted = List.of("TestAgent.jar", "GourmetAgent.jar", "CompressAgent.jar");
-        if (args.length == 2 && agentsAccepted.contains(args[1])) {
-            int port = Integer.parseInt(args[0]);
-            String jarPath = args[1];
+        if (args.length < 2) {
+            System.out.println("--- USAGE ---");
+            System.out.println("Format adresse : IP:PORT (ex: 127.0.0.1:8080)");
+            System.out.println("1. SERVEUR : java Server <LocalAddress> <ServiceType>");
+            System.out.println("2. CLIENT  : java Server <LocalAddress> <DestAddress1> ... <Agent.jar>");
+            return;
+        }
 
-            // Définition de l'itinéraire
-            Queue<Node> itinerary = new LinkedList<>();
-            itinerary.add(new Node("localhost", 8081));
-            if (!jarPath.equals("CompressAgent.jar")) {
-                itinerary.add(new Node("localhost", 8082));
-            }
-            itinerary.add(new Node("localhost", port));
+        // récupération addresse locale
+        String localAddressArg = args[0];
+        if (!localAddressArg.contains(":")) {
+            System.err.println("Erreur : L'adresse locale doit être au format IP:PORT (ex: 127.0.0.1:8080)");
+            return;
+        }
+        String myIp = localAddressArg.split(":")[0];
+        int myPort = Integer.parseInt(localAddressArg.split(":")[1]);
+        String lastArg = args[args.length - 1];
 
-            // Configuration de l'Agent
-            System.out.println("CLIENT : Création de l'agent");
-            AgentImpl agent;
+        // MODE CLIENT
+        if (lastArg.endsWith(".jar")) {
             try {
-                String className = jarPath.replace(".jar", "");
-                // Création du classloader agent
-                AgentLoader agentLoader = new AgentLoader(Server.class.getClassLoader());
-                agentLoader.loadJar(jarPath);
-                // Chargement de la classe via le loader
-                Class<?> clazz = Class.forName(className, true, agentLoader);
-                Constructor<?> ctor = clazz.getConstructor(Queue.class, String.class);
-                agent = (AgentImpl) ctor.newInstance(itinerary, jarPath);
-            } catch (Exception e) {
-                System.err.println("CLIENT : Impossible de charger l'agent " + jarPath);
-                e.printStackTrace();
-                return;
-            }
+                String jarPath = lastArg;
 
-            // envoi initial
-            Node firstDestination = itinerary.poll();
-            System.out.println("CLIENT : Migration vers serveur " + firstDestination.getPort());
-            try {
-                agent.move(firstDestination);
+                Queue<Node> itinerary = new LinkedList<>();
+                for (int i = 1; i < args.length - 1; i++) {
+                    String dest = args[i];
+                    String[] parts = dest.split(":");
+                    if (parts.length != 2) {
+                        System.err.println("Erreur format destination (attendu IP:PORT) : " + dest);
+                        return;
+                    }
+                    itinerary.add(new Node(parts[0], Integer.parseInt(parts[1])));
+                }
+
+                System.out.println("CLIENT : Mon adresse de retour est " + myIp + ":" + myPort);
+                itinerary.add(new Node(myIp, myPort));
+
+                // Configuration de l'Agent
+                System.out.println("CLIENT : Création de l'agent");
+                AgentImpl agent;
+                try {
+                    String className = jarPath.replace(".jar", "");
+                    // Création du classloader agent
+                    AgentLoader agentLoader = new AgentLoader(Server.class.getClassLoader());
+                    agentLoader.loadJar(jarPath);
+                    // Chargement de la classe via le loader
+                    Class<?> clazz = Class.forName(className, true, agentLoader);
+                    Constructor<?> ctor = clazz.getConstructor(Queue.class, String.class);
+                    agent = (AgentImpl) ctor.newInstance(itinerary, jarPath);
+                } catch (Exception e) {
+                    System.err.println("CLIENT : Impossible de charger l'agent " + jarPath);
+                    e.printStackTrace();
+                    return;
+                }
+
+                Node firstDestination = itinerary.poll();
+                if (firstDestination != null) {
+                    System.out.println(
+                            "CLIENT : Départ vers " + firstDestination.getAddress() + ":" + firstDestination.getPort());
+                    agent.move(firstDestination);
+                }
+
+                new Server(myPort).start();
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            new Server(port).start();
+        }
 
-            // cas serveur receveur
-        } else if (args.length == 2) {
-            int port = Integer.parseInt(args[0]);
+        // MODE SERVEUR DE SERVICE
+        else {
             String serviceType = args[1];
             switch (serviceType) {
                 case "ServiceGuide":
-                    new Server(port, "ServiceGuide", new ServiceGuideImpl()).start();
+                    new Server(myPort, "ServiceGuide", new ServiceGuideImpl()).start();
                     break;
                 case "ServiceTarif":
-                    new Server(port, "ServiceTarif", new ServiceTarifImpl()).start();
+                    new Server(myPort, "ServiceTarif", new ServiceTarifImpl()).start();
                     break;
                 case "ServiceFile":
-                    new Server(port, "ServiceFile", new ServiceFileImpl()).start();
+                    new Server(myPort, "ServiceFile", new ServiceFileImpl()).start();
                     break;
                 default:
-                    System.out.println("Type de service inconnu, démarrage serveur vide.");
-                    new Server(port).start();
+                    System.out.println("Service inconnu. Démarrage serveur générique sur " + myIp + ":" + myPort);
+                    new Server(myPort).start();
             }
-
-        } else {
-            System.out.println("Usage: java Server <port> <agent.jar|ServiceGuide|ServiceTarif>");
         }
     }
 }

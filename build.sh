@@ -88,10 +88,10 @@ echo "Lancement pour le scénario : $AGENT_NAME"
 echo "=========================================="
 
 if [ "$AGENT_NAME" == "GourmetAgent" ]; then
-    echo "1. Srv 1 (Guide) : cd runtime/srv1 && java Server 8081 ServiceGuide"
-    echo "2. Srv 2 (Tarif) : cd runtime/srv2 && java Server 8082 ServiceTarif"
-    echo "3. Client        : cd runtime/client && java Server 8080 $JAR_NAME"
+    echo "1. Srv 1 (Guide) : cd runtime/srv1 && java Server IP:PORT ServiceGuide"
+    echo "2. Srv 2 (Tarif) : cd runtime/srv2 && java Server IP:PORT ServiceTarif"
+    echo "3. Client        : cd runtime/client && java Server IP:PORT $JAR_NAME"
 elif [ "$AGENT_NAME" == "CompressAgent" ]; then
-    echo "1. Srv 1 (File)  : cd runtime/srv1 && java Server 8081 ServiceFile"
-    echo "3. Client        : cd runtime/client && java Server 8080 $JAR_NAME"
+    echo "1. Srv 1 (File)  : cd runtime/srv1 && java Server IP:PORT ServiceFile"
+    echo "3. Client        : cd runtime/client && java Server IP:PORT $JAR_NAME"
 fi
