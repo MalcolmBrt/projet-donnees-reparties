@@ -27,7 +27,7 @@ public class GourmetAgent extends AgentImpl {
             ServiceGuide guide = (ServiceGuide) services.get("ServiceGuide");
 
             // 1. Récupération locale (rapide)
-            List<Restaurant> resultats = guide.getRestaurants(20000);
+            List<Restaurant> resultats = guide.getRestaurants(1);
             
             // 2. Tri local (On garde les meilleures notes en premier)
             resultats.sort((r1, r2) -> Double.compare(r2.getNote(), r1.getNote()));
@@ -57,7 +57,7 @@ public class GourmetAgent extends AgentImpl {
             if (maSelection.isEmpty()) {
                 System.out.println("Aucun restaurant trouvé ou parcours incomplet.");
             } else {
-                int nTop = 10;
+                int nTop = Math.min(maSelection.size(), 10);
                 List<Restaurant> top = maSelection.subList(0, nTop);
                 System.out.println("Top " + nTop + " sur " + maSelection.size() + " restaurants.");
                 for (Restaurant r : top) {

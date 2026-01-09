@@ -34,20 +34,20 @@ echo "--- Configuration pour $AGENT_NAME ---"
 
 CORE_FILES="platform/Server.class platform/Server\$1.class platform/AgentLoader.class common/Agent.class common/AgentImpl.class common/MoveException.class common/Node.class"
 CLIENT_FILES="$CORE_FILES platform/Client.class"
+SERVER_FILES="$CORE_FILES"
 
 case $AGENT_NAME in
     "GourmetAgent")
         JAR_CONTENT="agents/$AGENT_NAME.class"
         CLIENT_FILES="$CLIENT_FILES services/restaurants/Restaurant.class"
-        SERVER_FILES="services/restaurants/ServiceGuideImpl.class services/restaurants/ServiceTarifImpl.class services/restaurants/Restaurant.class services/restaurants/ServiceGuide.class services/restaurants/ServiceTarif.class"
+        SERVER_FILES="$SERVER_FILES services/restaurants/ServiceGuideImpl.class services/restaurants/ServiceTarifImpl.class services/restaurants/Restaurant.class services/restaurants/ServiceGuide.class services/restaurants/ServiceTarif.class"
         ;;
     "CompressAgent")
         JAR_CONTENT="agents/$AGENT_NAME.class"
-        SERVER_FILES="services/files/ServiceFileImpl.class services/files/ServiceFile.class"
+        SERVER_FILES="$SERVER_FILES services/files/ServiceFileImpl.class services/files/ServiceFile.class"
         ;;
     "TestAgent")
         JAR_CONTENT="agents/$AGENT_NAME.class"
-        SERVER_FILES=""
         ;;
     *)
         echo "Agent inconnu : $AGENT_NAME"
@@ -72,9 +72,7 @@ done
 # Déploiement sur les SERVEURS (Core + Services + Implémentations)
 echo "-> Serveurs (srv1 & srv2)..."
 
-ALL_SERVER_FILES="$CORE_FILES $SERVER_FILES"
-
-for file in $ALL_SERVER_FILES; do
+for file in $SERVER_FILES; do
     mkdir -p "runtime/srv1/$(dirname $file)"
     cp "bin/$file" "runtime/srv1/$file"
     mkdir -p "runtime/srv2/$(dirname $file)"
