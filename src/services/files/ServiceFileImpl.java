@@ -9,7 +9,7 @@ public class ServiceFileImpl implements ServiceFile {
         File f = new File(fileName);
         if (!f.exists()) {
             System.out.println("ERREUR SERVICE : Fichier introuvable -> " + f.getAbsolutePath());
-            return new byte[0]; // Retourne vide si pas trouvé
+            return new byte[0];
         }
         return Files.readAllBytes(f.toPath());
     }

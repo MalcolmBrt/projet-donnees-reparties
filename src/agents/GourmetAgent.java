@@ -26,13 +26,8 @@ public class GourmetAgent extends AgentImpl {
             System.out.println("AGENT : Arrivé au Guide Michelin.");
             ServiceGuide guide = (ServiceGuide) services.get("ServiceGuide");
 
-            // 1. Récupération locale (rapide)
-            List<Restaurant> resultats = guide.getRestaurants(1);
-            
-            // 2. Tri local (On garde les meilleures notes en premier)
+            List<Restaurant> resultats = guide.getRestaurants(1000);
             resultats.sort((r1, r2) -> Double.compare(r2.getNote(), r1.getNote()));
-
-            // 3. Filtrage (On ne garde que le TOP 3 pour voyager léger)
             this.maSelection = new ArrayList<>(resultats);
             
             System.out.println("AGENT : J'ai récupéré la liste complète de " + this.maSelection.size() + " restaurants.");

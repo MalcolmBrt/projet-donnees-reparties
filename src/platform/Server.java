@@ -151,7 +151,7 @@ public class Server {
             return;
         }
 
-        // On récupère juste le port pour le ServerSocket (l'IP sert juste d'info ici)
+        // On récupère juste le port pour le ServerSocket
         int myPort = Integer.parseInt(localAddressArg.split(":")[1]);
         String serviceType = args[1];
 

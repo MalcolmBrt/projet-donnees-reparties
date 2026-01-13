@@ -26,7 +26,6 @@ public class Client {
         String myIp = localAddressArg.split(":")[0];
         int myPort = Integer.parseInt(localAddressArg.split(":")[1]);
 
-        // Vérification basique que c'est bien une commande client
         if (!lastArg.endsWith(".jar")) {
             System.err.println("Erreur : Le dernier argument doit être le fichier .jar de l'agent.");
             return;
@@ -50,7 +49,6 @@ public class Client {
             System.out.println("CLIENT : Mon adresse de retour est " + myIp + ":" + myPort);
             itinerary.add(new Node(myIp, myPort));
 
-            // Chargement initial de l'Agent via Reflection
             System.out.println("CLIENT : Création de l'agent depuis " + jarPath);
             AgentImpl agent;
             
@@ -62,8 +60,6 @@ public class Client {
             
             Class<?> clazz = Class.forName(className, true, agentLoader);
             Constructor<?> ctor = clazz.getConstructor(Queue.class, String.class);
-            
-            // Instanciation
             agent = (AgentImpl) ctor.newInstance(itinerary, jarPath);
 
             // Départ de l'agent
@@ -72,7 +68,7 @@ public class Client {
             long start = System.currentTimeMillis();
             agent.move(firstDestination);
 
-            // Le Client devient Serveur pour attendre le retour de l'agent
+            // Le client devient Serveur pour attendre le retour de l'agent
             System.out.println("CLIENT : Je passe en mode écoute pour le retour...");
 
             new Server(myPort, start).start();

@@ -10,8 +10,8 @@ import common.Node;
 import services.files.ServiceFile;
 
 public class CompressAgent extends AgentImpl {
-    private String fileName; // Le nom du fichier à chercher
-    private byte[] dataCompressed; // Le résultat compressé
+    private String fileName;
+    private byte[] dataCompressed;
     private long originalSize = 0;
 
     // Constructeur appelé par la réflexion du Server.java
@@ -29,14 +29,14 @@ public class CompressAgent extends AgentImpl {
             ServiceFile service = (ServiceFile) services.get("ServiceFile");
 
             try {
-                // 1. Récupération locale (Gros volume de données, mais en mémoire RAM locale)
+                // Récupération locale
                 byte[] rawData = service.getContent(fileName);
                 this.originalSize = rawData.length;
 
                 if (originalSize == 0) {
                     System.out.println("AGENT : Fichier vide ou introuvable.");
                 } else {
-                    // 2. Compression locale (CPU du serveur)
+                    // Compression locale
                     System.out.println("AGENT : Compression en cours...");
 
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();

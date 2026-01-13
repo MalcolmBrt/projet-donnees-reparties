@@ -4,16 +4,15 @@ import java.io.Serializable;
 
 public class Restaurant implements Serializable {
     private String nom;
-    private double note; // Note sur 20
-    private double prixMoyen; // Prix en euros
+    private double note;
+    private double prixMoyen;
 
     public Restaurant(String nom, double note) {
         this.nom = nom;
         this.note = note;
-        this.prixMoyen = -1; // -1 signifie "prix inconnu"
+        this.prixMoyen = -1;
     }
 
-    // Getters / Setters
     public String getNom() {
         return nom;
     }
